@@ -1,0 +1,30 @@
+# Terraform exclusions
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+.terraform.lock.hcl
+
+# Python exclusions
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+env/
+venv/
+ENV/
+
+# JVM / Spark exclusions
+*.class
+*.jar
+*.log
+spark-warehouse/
+metastore_db/
+derby.log
+
+# IDE & OS exclusions
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
