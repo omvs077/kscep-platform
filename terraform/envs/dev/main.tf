@@ -39,3 +39,26 @@ module "secrets" {
   source    = "../../modules/secrets"
   namespace = module.namespace.pipeline_namespace_name
 }
+
+module "kafka" {
+  source = "../../modules/kafka"
+
+  namespace               = module.namespace.pipeline_namespace_name
+  kafka_admin_password    = module.secrets.kafka_admin_password
+  kafka_producer_password = module.secrets.kafka_producer_password
+  kafka_spark_password    = module.secrets.kafka_spark_password
+  kafka_keda_password     = module.secrets.kafka_keda_password
+  replica_count           = 1
+}
+
+module "producer" {
+  source = "../../modules/producer"
+
+  namespace            = module.namespace.pipeline_namespace_name
+  bootstrap_servers    = module.kafka.bootstrap_servers
+  kafka_secret_name    = module.secrets.kafka_secret_name
+  producer_secret_name = module.secrets.producer_secret_name
+  image                = "producer:latest"
+  replicas             = 2
+}
+

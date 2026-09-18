@@ -17,3 +17,12 @@ output "kafka_secret_name" {
 output "producer_secret_name" {
   value = module.secrets.producer_secret_name
 }
+
+output "kafka_bootstrap_servers" {
+  value = module.kafka.bootstrap_servers
+}
+
+output "producer_service_name" {
+  value = module.producer.service_name
+}
+

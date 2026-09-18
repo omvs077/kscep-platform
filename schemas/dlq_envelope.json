@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "kscep.dlq.v1",
+  "type": "object",
+  "required": [
+    "original_payload",
+    "failure_reason",
+    "validation_errors",
+    "failed_at"
+  ],
+  "properties": {
+    "original_payload": {
+      "type": "string"
+    },
+    "failure_reason": {
+      "type": "string",
+      "enum": [
+        "schema_validation_error",
+        "deserialization_error"
+      ]
+    },
+    "validation_errors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "failed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_partition": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "source_offset": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": false
+}
