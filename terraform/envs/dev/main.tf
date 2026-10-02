@@ -62,3 +62,13 @@ module "producer" {
   replicas             = 2
 }
 
+module "spark" {
+  source = "../../modules/spark"
+
+  namespace               = module.namespace.pipeline_namespace_name
+  kafka_bootstrap_servers = module.kafka.bootstrap_servers
+  kafka_secret_name       = module.secrets.kafka_secret_name
+  image                   = "spark:latest"
+  replicas                = 1
+}
+

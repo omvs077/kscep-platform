@@ -26,3 +26,7 @@ output "producer_service_name" {
   value = module.producer.service_name
 }
 
+output "spark_deployment_name" {
+  value = module.spark.deployment_name
+}
+
