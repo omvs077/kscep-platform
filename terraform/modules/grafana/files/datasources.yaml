@@ -18,5 +18,12 @@ datasources:
     uid: prom
     type: prometheus
     access: proxy
-    url: http://prometheus-operated.monitoring.svc.cluster.local:9090
+    url: http://prometheus.monitoring.svc.cluster.local:9090
     editable: false
+  - name: Loki
+    uid: loki
+    type: loki
+    access: proxy
+    url: http://loki.monitoring.svc.cluster.local:3100
+    editable: false
+

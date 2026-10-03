@@ -78,5 +78,5 @@ The platform provides end-to-end observability, fine-grained zero-trust network 
 - **Sprint 4 (Done):** Storage & Visualization - PostgreSQL 16, Partitioning, DB Roles, Grafana Dashboards as Code.
 - **Sprint 5 (Done):** Elastic Autoscaling - KEDA Operator, ScaledObjects, Locust Load Testing.
 - **Sprint 6 (Done):** Security Hardening & Compliance - Fine-grained NetPols, Trivy scan, kube-bench, Gitleaks.
-- **Sprint 7 (Planned):** Observability Stack - Prometheus, Alertmanager rules, Loki log aggregation.
+- **Sprint 7 (Done):** Observability Stack - Prometheus, Alertmanager rules, Loki log aggregation.
 - **Sprint 8 (Planned):** CI/CD & Production Readiness - GitHub Actions workflows, end-to-end integration tests.

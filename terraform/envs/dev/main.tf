@@ -96,3 +96,10 @@ module "keda" {
   producer_deployment_name = "producer"
   producer_lag_threshold   = 100
 }
+
+module "monitoring" {
+  source             = "../../modules/monitoring"
+  namespace          = module.namespace.monitoring_namespace_name
+  pipeline_namespace = module.namespace.pipeline_namespace_name
+  prometheus_sa_name = "prometheus-sa"
+}
