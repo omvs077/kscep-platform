@@ -3,9 +3,12 @@
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": { "moby": false },
+    "ghcr.io/devcontainers/features/python:1": { "version": "3.11" },
     "ghcr.io/devcontainers/features/terraform:1": {},
     "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {}
   },
+  "forwardPorts": [8080, 3000, 9090],
+  "postCreateCommand": "pip install -r tests/integration/requirements.txt && terraform -chdir=terraform/envs/dev init -backend=false",
   "hostRequirements": { "cpus": 4 },
   "customizations": {
     "vscode": { "extensions": ["hashicorp.terraform", "ms-python.python"] }
