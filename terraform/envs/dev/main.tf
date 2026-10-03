@@ -72,3 +72,8 @@ module "spark" {
   replicas                = 1
 }
 
+module "postgres" {
+  source      = "../../modules/postgres"
+  namespace   = module.namespace.pipeline_namespace_name
+  secret_name = module.secrets.postgres_secret_name
+}
