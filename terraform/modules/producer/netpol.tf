@@ -33,5 +33,24 @@ resource "kubernetes_network_policy" "producer_netpol" {
         }
       }
     }
+
+    # Allow DNS egress
+    egress {
+      ports {
+        port     = "53"
+        protocol = "UDP"
+      }
+      ports {
+        port     = "53"
+        protocol = "TCP"
+      }
+      to {
+        namespace_selector {
+          match_labels = {
+            "kubernetes.io/metadata.name" = "kube-system"
+          }
+        }
+      }
+    }
   }
 }

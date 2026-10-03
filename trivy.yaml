@@ -1,0 +1,23 @@
+# Trivy Configuration for K.S.C.E.P. Platform
+timeout: 10m
+severity:
+  - HIGH
+  - CRITICAL
+exit-code: 0 # Set to 1 in strict CI/CD gates
+
+scan:
+  scanners:
+    - vuln
+    - misconfig
+    - secret
+
+format: table
+
+misconfiguration:
+  scanners:
+    - terraform
+    - dockerfile
+    - kubernetes
+
+vulnerability:
+  ignore-unfixed: true

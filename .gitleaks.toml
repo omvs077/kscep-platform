@@ -1,0 +1,18 @@
+title = "K.S.C.E.P. Platform Gitleaks Configuration"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Global allowlist for dummy test credentials and documentation"
+paths = [
+  '''docs/.*''',
+  '''tests/.*''',
+  '''\.pytest_cache/.*''',
+  '''terraform/envs/dev/terraform\.tfstate.*'''
+]
+regexes = [
+  '''default-dev-key''',
+  '''producer-secret''',
+  '''spark-secret'''
+]
