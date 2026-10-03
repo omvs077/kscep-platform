@@ -21,6 +21,16 @@ resource "helm_release" "keda" {
   }
 
   set {
+    name  = "image.pullPolicy"
+    value = "IfNotPresent"
+  }
+
+  set {
+    name  = "pullPolicy"
+    value = "IfNotPresent"
+  }
+
+  set {
     name  = "resources.operator.requests.cpu"
     value = "50m"
   }
