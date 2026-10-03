@@ -9,7 +9,6 @@
 [![KEDA](https://img.shields.io/badge/Autoscaling-KEDA_2.14-orange.svg)](https://keda.sh/)
 [![Grafana](https://img.shields.io/badge/Dashboards-Grafana_10-F46800.svg?logo=grafana)](https://grafana.com/)
 [![Terraform](https://img.shields.io/badge/IaC-Terraform-7B42BC.svg?logo=terraform)](https://www.terraform.io/)
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/omvs077/kscep-platform)
 
 An enterprise-grade, real-time event streaming and analytical processing platform running entirely on Kubernetes. Designed following GitOps, Zero-Trust network segmentation, and Infrastructure-as-Code best practices.
 
