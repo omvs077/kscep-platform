@@ -1,7 +1,7 @@
 # K.S.C.E.P. Platform
 ### Kubernetes Stream Clickstream Event Processing
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-1.28+-blue.svg?logo=kubernetes)](https://kubernetes.io/)
 [![Kafka KRaft](https://img.shields.io/badge/Apache_Kafka-KRaft_3.6-black.svg?logo=apachekafka)](https://kafka.apache.org/)
 [![Apache Spark](https://img.shields.io/badge/Apache_Spark-3.5.1-E25A1C.svg?logo=apachespark)](https://spark.apache.org/)
@@ -122,5 +122,5 @@ terraform apply -auto-approve
 ---
 
 ## 📜 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+ 
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
