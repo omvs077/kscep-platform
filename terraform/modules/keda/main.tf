@@ -51,114 +51,55 @@ resource "helm_release" "keda" {
   }
 }
 
-resource "kubernetes_manifest" "trigger_auth" {
-  manifest = {
-    apiVersion = "keda.sh/v1alpha1"
-    kind       = "TriggerAuthentication"
-    metadata = {
-      name      = "keda-kafka-auth"
-      namespace = var.namespace
-    }
-    spec = {
-      secretTargetRef = [
-        {
-          parameter = "username"
-          name      = var.kafka_secret_name
-          key       = "keda-username"
-        },
-        {
-          parameter = "password"
-          name      = var.kafka_secret_name
-          key       = "keda-password"
-        },
-        {
-          parameter = "sasl"
-          name      = var.kafka_secret_name
-          key       = "keda-sasl"
-        }
-      ]
-    }
+resource "helm_release" "keda_resources" {
+  name      = "keda-resources"
+  chart     = "${path.module}/keda-resources"
+  namespace = var.namespace
+
+  set {
+    name  = "namespace"
+    value = var.namespace
+  }
+
+  set {
+    name  = "kafkaSecretName"
+    value = var.kafka_secret_name
+  }
+
+  set {
+    name  = "kafkaBootstrapServers"
+    value = var.kafka_bootstrap_servers
+  }
+
+  set {
+    name  = "kafkaTopic"
+    value = var.kafka_topic
+  }
+
+  set {
+    name  = "sparkDeploymentName"
+    value = var.spark_deployment_name
+  }
+
+  set {
+    name  = "sparkConsumerGroup"
+    value = var.spark_consumer_group
+  }
+
+  set {
+    name  = "sparkLagThreshold"
+    value = tostring(var.spark_lag_threshold)
+  }
+
+  set {
+    name  = "producerDeploymentName"
+    value = var.producer_deployment_name
+  }
+
+  set {
+    name  = "producerLagThreshold"
+    value = tostring(var.producer_lag_threshold)
   }
 
   depends_on = [helm_release.keda]
-}
-
-resource "kubernetes_manifest" "spark_scaled_object" {
-  manifest = {
-    apiVersion = "keda.sh/v1alpha1"
-    kind       = "ScaledObject"
-    metadata = {
-      name      = "spark-kafka-scaler"
-      namespace = var.namespace
-      labels = {
-        app = "spark"
-      }
-    }
-    spec = {
-      scaleTargetRef = {
-        name = var.spark_deployment_name
-      }
-      minReplicaCount = 1
-      maxReplicaCount = 3
-      pollingInterval = 15
-      cooldownPeriod  = 60
-      triggers = [
-        {
-          type = "kafka"
-          metadata = {
-            bootstrapServers  = var.kafka_bootstrap_servers
-            consumerGroup     = var.spark_consumer_group
-            topic             = var.kafka_topic
-            lagThreshold      = tostring(var.spark_lag_threshold)
-            offsetResetPolicy = "latest"
-          }
-          authenticationRef = {
-            name = "keda-kafka-auth"
-          }
-        }
-      ]
-    }
-  }
-
-  depends_on = [kubernetes_manifest.trigger_auth]
-}
-
-resource "kubernetes_manifest" "producer_scaled_object" {
-  manifest = {
-    apiVersion = "keda.sh/v1alpha1"
-    kind       = "ScaledObject"
-    metadata = {
-      name      = "producer-kafka-scaler"
-      namespace = var.namespace
-      labels = {
-        app = "producer"
-      }
-    }
-    spec = {
-      scaleTargetRef = {
-        name = var.producer_deployment_name
-      }
-      minReplicaCount = 1
-      maxReplicaCount = 5
-      pollingInterval = 15
-      cooldownPeriod  = 60
-      triggers = [
-        {
-          type = "kafka"
-          metadata = {
-            bootstrapServers  = var.kafka_bootstrap_servers
-            consumerGroup     = var.spark_consumer_group
-            topic             = var.kafka_topic
-            lagThreshold      = tostring(var.producer_lag_threshold)
-            offsetResetPolicy = "latest"
-          }
-          authenticationRef = {
-            name = "keda-kafka-auth"
-          }
-        }
-      ]
-    }
-  }
-
-  depends_on = [kubernetes_manifest.trigger_auth]
 }

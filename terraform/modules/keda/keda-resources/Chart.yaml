@@ -1,0 +1,5 @@
+apiVersion: v2
+name: keda-resources
+description: KEDA TriggerAuthentication and ScaledObjects for K.S.C.E.P. Platform
+version: 0.1.0
+appVersion: "1.0.0"

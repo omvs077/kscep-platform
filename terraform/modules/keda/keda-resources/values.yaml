@@ -1,0 +1,9 @@
+namespace: clickstream-pipeline
+kafkaSecretName: kafka-secrets
+kafkaBootstrapServers: "kafka.clickstream-pipeline.svc.cluster.local:9092"
+kafkaTopic: clickstream-events
+sparkDeploymentName: spark-streaming
+sparkConsumerGroup: kscep-spark-consumer
+sparkLagThreshold: "50"
+producerDeploymentName: producer
+producerLagThreshold: "100"

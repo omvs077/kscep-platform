@@ -1,0 +1,49 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: spark-kafka-scaler
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: spark
+spec:
+  scaleTargetRef:
+    name: {{ .Values.sparkDeploymentName }}
+  minReplicaCount: 1
+  maxReplicaCount: 3
+  pollingInterval: 15
+  cooldownPeriod: 60
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: {{ .Values.kafkaBootstrapServers | quote }}
+        consumerGroup: {{ .Values.sparkConsumerGroup | quote }}
+        topic: {{ .Values.kafkaTopic | quote }}
+        lagThreshold: {{ .Values.sparkLagThreshold | quote }}
+        offsetResetPolicy: "latest"
+      authenticationRef:
+        name: keda-kafka-auth
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: producer-kafka-scaler
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: producer
+spec:
+  scaleTargetRef:
+    name: {{ .Values.producerDeploymentName }}
+  minReplicaCount: 1
+  maxReplicaCount: 5
+  pollingInterval: 15
+  cooldownPeriod: 60
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: {{ .Values.kafkaBootstrapServers | quote }}
+        consumerGroup: {{ .Values.sparkConsumerGroup | quote }}
+        topic: {{ .Values.kafkaTopic | quote }}
+        lagThreshold: {{ .Values.producerLagThreshold | quote }}
+        offsetResetPolicy: "latest"
+      authenticationRef:
+        name: keda-kafka-auth
