@@ -74,9 +74,9 @@ The platform provides end-to-end observability, fine-grained zero-trust network 
 ### 5. Release Roadmap (Sprint Plan)
 - **Sprint 1 (Done):** Secure Foundation - IaC, Minikube, Namespaces, Default-Deny NetPols, Secrets, RBAC.
 - **Sprint 2 (Done):** Ingestion Layer - Schema Governance, Flask Producer Control Panel, Kafka KRaft, Producer ACLs.
-- **Sprint 3 (In Progress):** Stream Processing - Spark Structured Streaming, DLQ Routing, Windowing, Exactly-Once Sink.
-- **Sprint 4 (Planned):** Storage & Visualization - PostgreSQL 16, Partitioning, DB Roles, Grafana Dashboards as Code.
-- **Sprint 5 (Planned):** Elastic Autoscaling - KEDA Operator, ScaledObjects, Locust Load Testing.
+- **Sprint 3 (Done):** Stream Processing - Spark Structured Streaming, DLQ Routing, Windowing, Exactly-Once Sink.
+- **Sprint 4 (Done):** Storage & Visualization - PostgreSQL 16, Partitioning, DB Roles, Grafana Dashboards as Code.
+- **Sprint 5 (Done):** Elastic Autoscaling - KEDA Operator, ScaledObjects, Locust Load Testing.
 - **Sprint 6 (Planned):** Security Hardening & Compliance - Fine-grained NetPols, Trivy scan, kube-bench, Gitleaks.
 - **Sprint 7 (Planned):** Observability Stack - Prometheus, Alertmanager rules, Loki log aggregation.
 - **Sprint 8 (Planned):** CI/CD & Production Readiness - GitHub Actions workflows, end-to-end integration tests.

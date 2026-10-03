@@ -66,6 +66,8 @@ resource "kubernetes_secret" "kafka_credentials" {
     producer-password = random_password.kafka_producer.result
     spark-password    = random_password.kafka_spark.result
     keda-password     = random_password.kafka_keda.result
+    keda-username     = "keda"
+    keda-sasl         = "scram_sha512"
   }
 
   type = "Opaque"

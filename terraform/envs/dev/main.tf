@@ -83,3 +83,16 @@ module "grafana" {
   namespace               = module.namespace.monitoring_namespace_name
   grafana_reader_password = module.secrets.grafana_reader_password
 }
+
+module "keda" {
+  source                   = "../../modules/keda"
+  namespace                = module.namespace.pipeline_namespace_name
+  kafka_bootstrap_servers  = module.kafka.bootstrap_servers
+  kafka_secret_name        = module.secrets.kafka_secret_name
+  kafka_topic              = "clickstream-events"
+  spark_deployment_name    = "spark-streaming"
+  spark_consumer_group     = "kscep-spark-consumer"
+  spark_lag_threshold      = 50
+  producer_deployment_name = "producer"
+  producer_lag_threshold   = 100
+}

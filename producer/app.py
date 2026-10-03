@@ -217,7 +217,8 @@ def require_api_key(f):
 
 # Ingestion API endpoint (US-1.2 validation)
 @app.route("/api/events", methods=["POST"])
-@limiter.limit("10 per second")
+@app.route("/api/v1/events", methods=["POST"])
+@limiter.limit("100 per second")
 def ingest_event():
     try:
         data = request.json

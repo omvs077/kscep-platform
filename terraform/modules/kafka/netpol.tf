@@ -40,6 +40,13 @@ resource "kubernetes_network_policy" "kafka_netpol" {
           }
         }
       }
+      from {
+        namespace_selector {
+          match_labels = {
+            "kubernetes.io/metadata.name" = "keda"
+          }
+        }
+      }
     }
 
     # Inter-broker and controller ingress

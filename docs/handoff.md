@@ -10,93 +10,48 @@
 ### 1. Executive Summary & Sprint Progress
 The K.S.C.E.P. platform is being deployed on local Minikube Kubernetes across an 8-sprint plan.
 - **Sprint 1 (IaC, Namespaces, Default-Deny NetPols, Secrets, RBAC):** COMPLETED & Merged to `main`.
-- **Sprint 2 (Producer with UI control panel, schema governance `event_v1.json`, Bitnami Kafka KRaft, Producer ACLs):** COMPLETED, committed (`f29740f`), merged to `main`.
-- **Sprint 3 (Stream Processing - Spark, DLQ & Exactly-Once Sink):** COMPLETED & VERIFIED END-TO-END.
+- **Sprint 2 (Producer with UI control panel, schema governance `event_v1.json`, Bitnami Kafka KRaft, Producer ACLs):** COMPLETED & Merged to `main`.
+- **Sprint 3 (Stream Processing - Spark, DLQ & Exactly-Once Sink):** COMPLETED & Merged to `main`.
+- **Sprint 4 (Storage & Visualization - PostgreSQL 16, Daily Partitioning, Backup CronJob, Grafana Dashboards as Code):** COMPLETED & Merged to `main`.
+- **Sprint 5 (Elastic Autoscaling - KEDA Operator, TriggerAuthentication, ScaledObjects for Spark & Producer, Locust Load Testing):** COMPLETED & Verified via Terraform.
 
 ---
 
-### 2. Comprehensive Work Completed in Sprint 3
-1. **PySpark Streaming Job (`spark/streaming_job.py`):**
-   - Implemented `validate_payload()` checking schema conformance against `event_v1.json`.
-   - Implemented `build_dlq_envelope()` producing standard DLQ envelopes to `clickstream-events-dlq`.
-   - Implemented 60-second window aggregations sliding every 10 seconds with 2-minute event watermark using `approx_count_distinct(user_id)` for streaming compatibility.
-   - Implemented `upsert_to_postgres()` microbatch sink with atomic `INSERT ... ON CONFLICT (window_start, window_end, page_url) DO UPDATE` queries and graceful fallback when Postgres is booting.
-2. **Unit Tests (`tests/unit/test_spark_job.py`):**
-   - 5/5 unit tests written and verified passing via pytest (valid events, missing fields, invalid version, invalid event type, DLQ envelope schema conformance).
-3. **Kafka ACLs & SCRAM Credentials for Spark:**
-   - User `spark` configured with `SCRAM-SHA-512` credentials.
-   - ACLs granted:
-     - `Topic clickstream-events`: READ, DESCRIBE
-     - `Topic clickstream-events-dlq`: WRITE, DESCRIBE
-     - `Group *`: READ, DESCRIBE
-4. **PySpark Non-Root Container (`spark/Dockerfile`):**
-   - Based on `python:3.11-slim-bookworm` with `default-jre-headless` (Java 17).
-   - Runs as non-root `spark:spark` (UID 1000).
-   - Pre-downloads all 5 connector JARs during build:
-     - `spark-sql-kafka-0-10_2.12-3.5.1.jar`
-     - `spark-token-provider-kafka-0-10_2.12-3.5.1.jar`
-     - `kafka-clients-3.5.1.jar`
-     - `commons-pool2-2.11.1.jar`
-     - `postgresql-42.7.3.jar`
-   - Built and loaded into Minikube local registry cache as `spark:latest`.
-5. **Terraform Spark Module (`terraform/modules/spark/`):**
-   - `pvc.tf`: PVC `spark-checkpoints-pvc` (1Gi standard storage).
-   - `main.tf`: Deployment `spark-streaming` with security context UID 1000, environment variables for Kafka and Postgres, and checkpoint volume mount.
-   - `netpol.tf`: NetworkPolicy allowing egress to DNS (port 53), Kafka (port 9092), and PostgreSQL (port 5432).
-   - `outputs.tf` & `variables.tf`: Fully parameterized.
-   - Connected into `terraform/envs/dev/main.tf` and `outputs.tf`.
-   - Applied via Terraform with zero errors.
-6. **End-to-End Verification:**
-   - **Streaming Processing:** Producer traffic generator ran and published events to `clickstream-events`. Spark consumed microbatches across all 6 partitions and computed tumbling/sliding windows for active users, carts, and purchases.
-   - **Fault Tolerance / Checkpoints:** Verified that `commits/`, `offsets/`, `sources/`, and `state/` are written dynamically to `/opt/spark/checkpoints/` on the PVC.
-   - **DLQ Pipeline:** Injected poisoned JSON payload (`{"malformed_payload": true}`) into Kafka topic. Spark ingested the message, rejected the invalid schema, constructed the RFC-compliant DLQ envelope, and published to `clickstream-events-dlq`. Consumed and verified message directly from DLQ topic.
-7. **Complete Documentation Created:**
-   - `docs/prd.md`: Product Requirements Document
-   - `docs/srd.md`: Software & System Requirements Document
-   - `docs/tech_stack.md`: Tech Stack Matrix and Architectural Rationales
-   - `docs/architecture.md`: Architecture Diagram & End-to-End Data Flow
-   - `docs/handoff.md`: This comprehensive handoff document
+### 2. Comprehensive Work Completed in Sprint 4 & 5
+1. **PostgreSQL 16 Module (`terraform/modules/postgres/`):**
+   - StatefulSet running `postgres:16-alpine` with non-root security context (`uid: 70`).
+   - Declarative range table partitioning on `window_start` with automatic partition creation function `ensure_partitions(days_ahead)`.
+   - Role isolation: `spark_writer` (INSERT, UPDATE) and `grafana_reader` (SELECT-only).
+   - CronJobs for daily partition management (`postgres-partitions`) and nightly `pg_dump` backups (`postgres-backup`) to a dedicated PVC.
+   - Network policies strictly restricting port 5432 ingress to Spark, Grafana, and maintenance jobs.
+2. **Grafana Dashboards as Code (`terraform/modules/grafana/`):**
+   - Provisioned Grafana deployment with automated ConfigMap mounting for datasources and dashboards.
+   - Provisioned PostgreSQL datasource using `grafana_reader` credentials.
+   - Authored 3 production-grade dashboards: `Executive`, `Engineering`, and `Infra/Ops`.
+3. **KEDA Autoscaling Module (`terraform/modules/keda/`):**
+   - Deploys KEDA Helm chart with custom resource definitions enabled.
+   - `TriggerAuthentication` securely mapping Kafka SASL SCRAM-SHA-512 credentials from `kafka-secrets`.
+   - `ScaledObject` for Spark consumer scaling based on consumer group topic lag (min 1, max 3 replicas).
+   - `ScaledObject` for Producer scaling based on traffic load (min 1, max 5 replicas).
+   - NetworkPolicies for KEDA operator allowing egress to Kafka (port 9092) and Kubernetes API server.
+4. **Locust High-Concurrency Load Testing Suite (`tests/load/`):**
+   - Authored `locustfile.py` generating realistic e-commerce traffic conforming to `schemas/event_v1.json`.
+   - Authored `k8s-locust-job.yaml` for running high-throughput headless load tests inside the cluster.
+   - Added documentation in `tests/load/README.md`.
 
 ---
 
-### 3. Cluster & Environment State
-- **Minikube Status:** Running (`minikube status` confirms host, kubelet, and apiserver are active).
-- **Active Pods in `clickstream-pipeline`:**
-  - `kafka-controller-0`: 1/1 Running
-  - `producer-74cd5dfddd-bclzl`: 1/1 Running
-  - `producer-74cd5dfddd-wtn82`: 1/1 Running
-  - `spark-streaming-ddcb5bccb-rdx4t`: 1/1 Running
-- **Active PVCs:**
-  - `data-kafka-controller-0`: Bound (Kafka data)
-  - `spark-checkpoints-pvc`: Bound (Spark checkpoint storage)
-- **Secrets in `clickstream-pipeline`:**
-  - `kafka-secrets`: contains `admin-password`, `producer-password`, `spark-password`, `keda-password`.
-  - `producer-secrets`: contains `admin-api-key`.
-  - `postgres-secrets`: generated by Terraform secrets module.
-
----
-
-### 4. Next Steps for Sprint 4 (Storage & Visualization)
-1. **Merge Sprint 3 to Main:**
+### 3. Next Steps for Sprint 6 (Security Hardening & Compliance)
+1. **NetworkPolicy Hardening:**
+   - Audit and tighten all inter-pod communications to minimum necessary ports and CIDRs.
+2. **Static & Vulnerability Scanning:**
+   - Integrate Trivy vulnerability scanner in CI/CD pipeline for container images and Terraform configurations.
+   - Run `kube-bench` to validate CIS Kubernetes Benchmark compliance.
+   - Run `gitleaks` to enforce zero-secret leakage.
+3. **Merge Sprint 5 to Main:**
    ```powershell
    git checkout main
-   git merge feature/sprint3-stream-processing
+   git merge feature/sprint5-elastic-autoscaling
    git push origin main
-   git checkout -b feature/sprint4-storage-visualization
+   git checkout -b feature/sprint6-security-hardening
    ```
-2. **Author PostgreSQL 16 Module (`terraform/modules/postgres/`):**
-   - StatefulSet/Deployment running `postgres:16-alpine`.
-   - PersistentVolumeClaim for `/var/lib/postgresql/data`.
-   - Init script creating database `clickstream`, table `windowed_user_metrics` with range partitioning by day.
-   - Database roles: `spark_writer` (INSERT/UPDATE) and `grafana_reader` (SELECT-only).
-   - NetworkPolicy allowing ingress from Spark (port 5432) and Grafana (port 5432).
-3. **Daily Partitioning & Backup CronJobs:**
-   - Kubernetes CronJob running daily to create tomorrow's partition (`windowed_user_metrics_YYYY_MM_DD`).
-   - Kubernetes CronJob running nightly running `pg_dump` backup.
-4. **Author Grafana Module (`terraform/modules/grafana/`):**
-   - Deploy Grafana via Terraform / Helm.
-   - Provision Postgres datasource using `grafana_reader` credentials.
-   - Provision 3 dashboards as code: Executive, Engineering, Infra/Ops.
-5. **Verify:**
-   - Confirm Spark begins populating PostgreSQL `windowed_user_metrics`.
-   - Access Grafana and verify dashboards render real-time streaming data.
