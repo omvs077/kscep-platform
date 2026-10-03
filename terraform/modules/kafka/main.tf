@@ -27,7 +27,8 @@ resource "helm_release" "kafka" {
         passwords: "${var.kafka_admin_password},${var.kafka_producer_password},${var.kafka_spark_password},${var.kafka_keda_password}"
     extraConfig: |-
       authorizer.class.name=org.apache.kafka.metadata.authorizer.StandardAuthorizer
-      super.users=User:admin;User:controller_user;User:inter_broker_user
+      super.users=User:admin;User:controller_user;User:inter_broker_user;User:producer;User:spark;User:keda
+      allow.everyone.if.no.acl.found=true
       offsets.topic.replication.factor=1
       offsets.topic.num.partitions=1
       transaction.state.log.replication.factor=1
