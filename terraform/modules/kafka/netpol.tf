@@ -29,6 +29,13 @@ resource "kubernetes_network_policy" "kafka_netpol" {
       from {
         pod_selector {
           match_labels = {
+            app = "spark"
+          }
+        }
+      }
+      from {
+        pod_selector {
+          match_labels = {
             "app.kubernetes.io/name" = "kafka"
           }
         }
