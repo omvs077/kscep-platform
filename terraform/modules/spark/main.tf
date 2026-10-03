@@ -69,6 +69,16 @@ resource "kubernetes_deployment" "spark" {
           }
 
           env {
+            name = "POSTGRES_PASSWORD"
+            value_from {
+              secret_key_ref {
+                name = var.postgres_secret_name
+                key  = "spark-writer-password"
+              }
+            }
+          }
+
+          env {
             name  = "CHECKPOINT_DIR"
             value = "/opt/spark/checkpoints"
           }

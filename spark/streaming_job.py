@@ -110,65 +110,49 @@ def upsert_to_postgres(batch_df, batch_id):
     records = batch_df.collect()
 
     try:
-        import psycopg2
-        conn = psycopg2.connect(
-            host=POSTGRES_HOST,
-            port=POSTGRES_PORT,
-            dbname=POSTGRES_DB,
-            user=POSTGRES_USER,
-            password=POSTGRES_PASSWORD,
-            connect_timeout=3
-        )
-        cur = conn.cursor()
+                import psycopg2
+                conn = psycopg2.connect(
+                    host=POSTGRES_HOST,
+                    port=POSTGRES_PORT,
+                    dbname=POSTGRES_DB,
+                    user=POSTGRES_USER,
+                    password=POSTGRES_PASSWORD,
+                    connect_timeout=3
+                )
+                cur = conn.cursor()
 
-        # Ensure table exists
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS windowed_user_metrics (
-                window_start TIMESTAMP NOT NULL,
-                window_end TIMESTAMP NOT NULL,
-                page_url VARCHAR(512) NOT NULL,
-                active_users INT DEFAULT 0,
-                cart_additions INT DEFAULT 0,
-                purchases INT DEFAULT 0,
-                cart_abandonment_rate DOUBLE PRECISION DEFAULT 0.0,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                PRIMARY KEY (window_start, window_end, page_url)
-            );
-        """)
+                upsert_query = """
+                    INSERT INTO windowed_user_metrics (
+                        window_start, window_end, page_url, active_users,
+                        cart_additions, purchases, cart_abandonment_rate, updated_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, NOW())
+                    ON CONFLICT (window_start, window_end, page_url)
+                    DO UPDATE SET
+                        active_users = EXCLUDED.active_users,
+                        cart_additions = EXCLUDED.cart_additions,
+                        purchases = EXCLUDED.purchases,
+                        cart_abandonment_rate = EXCLUDED.cart_abandonment_rate,
+                        updated_at = NOW();
+                """
 
-        upsert_query = """
-            INSERT INTO windowed_user_metrics (
-                window_start, window_end, page_url, active_users,
-                cart_additions, purchases, cart_abandonment_rate, updated_at
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, NOW())
-            ON CONFLICT (window_start, window_end, page_url)
-            DO UPDATE SET
-                active_users = EXCLUDED.active_users,
-                cart_additions = EXCLUDED.cart_additions,
-                purchases = EXCLUDED.purchases,
-                cart_abandonment_rate = EXCLUDED.cart_abandonment_rate,
-                updated_at = NOW();
-        """
+                for r in records:
+                    cur.execute(upsert_query, (
+                        r["window"]["start"],
+                        r["window"]["end"],
+                        r["page_url"] or "/unknown",
+                        int(r["active_users"]),
+                        int(r["cart_additions"]),
+                        int(r["purchases"]),
+                        float(r["cart_abandonment_rate"])
+                    ))
 
-        for r in records:
-            cur.execute(upsert_query, (
-                r["window"]["start"],
-                r["window"]["end"],
-                r["page_url"] or "/unknown",
-                int(r["active_users"]),
-                int(r["cart_additions"]),
-                int(r["purchases"]),
-                float(r["cart_abandonment_rate"])
-            ))
-
-        conn.commit()
-        cur.close()
-        conn.close()
-        logger.info(f"Successfully upserted {len(records)} records to Postgres in batch {batch_id}")
+                conn.commit()
+                cur.close()
+                conn.close()
+                logger.info(f"Successfully upserted {len(records)} records to Postgres in batch {batch_id}")
     except Exception as e:
-        logger.warning(f"Postgres upsert skipped/failed in batch {batch_id} (Postgres may be pending): {e}")
-        for r in records[:5]:
-            logger.info(f"Aggregated metric sample: window=[{r['window']['start']} - {r['window']['end']}] page={r['page_url']} active={r['active_users']} cart={r['cart_additions']} purchases={r['purchases']}")
+                logger.error(f"Postgres upsert failed in batch {batch_id}: {e}")
+                raise
 
 def main():
     logger.info("Initializing Spark Streaming Job for K.S.C.E.P. Platform")

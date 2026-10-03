@@ -75,3 +75,8 @@ variable "postgres_user" {
   description = "PostgreSQL user for Spark"
   default     = "spark_writer"
 }
+
+variable "postgres_secret_name" {
+  type    = string
+  default = "postgres-secrets"
+}
