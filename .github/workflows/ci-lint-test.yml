@@ -34,5 +34,7 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=.git,__pycache__,.pytest_cache
 
       - name: Run Pytest Unit Tests
+        env:
+          PYTHONPATH: .
         run: |
-          pytest tests/unit/ -v
+          pytest tests/ -v
