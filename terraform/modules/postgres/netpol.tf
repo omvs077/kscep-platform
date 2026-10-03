@@ -23,6 +23,14 @@ resource "kubernetes_network_policy_v1" "postgres_ingress" {
           match_labels = { app = "postgres-maintenance" }
         }
       }
+      from {
+        namespace_selector {
+          match_labels = { "kubernetes.io/metadata.name" = "monitoring" }
+        }
+        pod_selector {
+          match_labels = { app = "grafana" }
+        }
+      }
     }
   }
 }

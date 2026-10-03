@@ -1,0 +1,22 @@
+apiVersion: 1
+datasources:
+  - name: Postgres
+    uid: pg
+    type: postgres
+    access: proxy
+    url: postgres.clickstream-pipeline.svc.cluster.local:5432
+    user: grafana_reader
+    isDefault: true
+    editable: false
+    jsonData:
+      database: clickstream
+      sslmode: disable
+      postgresVersion: 1600
+    secureJsonData:
+      password: ${PG_READER_PASSWORD}
+  - name: Prometheus
+    uid: prom
+    type: prometheus
+    access: proxy
+    url: http://prometheus-operated.monitoring.svc.cluster.local:9090
+    editable: false

@@ -1,0 +1,212 @@
+{
+ "uid": "kscep-eng",
+ "title": "K.S.C.E.P. Engineering",
+ "tags": [
+  "kscep",
+  "engineering"
+ ],
+ "timezone": "utc",
+ "schemaVersion": 39,
+ "version": 1,
+ "refresh": "10s",
+ "time": {
+  "from": "now-30m",
+  "to": "now"
+ },
+ "editable": false,
+ "panels": [
+  {
+   "id": 1,
+   "type": "stat",
+   "title": "Data freshness (seconds since last upsert)",
+   "datasource": {
+    "type": "postgres",
+    "uid": "pg"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 0,
+    "w": 8,
+    "h": 5
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "postgres",
+      "uid": "pg"
+     },
+     "editorMode": "code",
+     "format": "table",
+     "rawQuery": true,
+     "rawSql": "SELECT COALESCE(extract(epoch FROM (now() AT TIME ZONE 'utc' - max(updated_at))),0) AS seconds FROM windowed_user_metrics"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "s"
+    },
+    "overrides": []
+   },
+   "description": "Alert-worthy if this keeps growing while the producer is running.",
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value"
+   }
+  },
+  {
+   "id": 2,
+   "type": "stat",
+   "title": "Pages with metrics (latest window)",
+   "datasource": {
+    "type": "postgres",
+    "uid": "pg"
+   },
+   "gridPos": {
+    "x": 8,
+    "y": 0,
+    "w": 8,
+    "h": 5
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "postgres",
+      "uid": "pg"
+     },
+     "editorMode": "code",
+     "format": "table",
+     "rawQuery": true,
+     "rawSql": "SELECT count(*) AS pages FROM windowed_user_metrics WHERE window_end = (SELECT max(window_end) FROM windowed_user_metrics WHERE window_end <= now() AT TIME ZONE 'utc')"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value"
+   }
+  },
+  {
+   "id": 3,
+   "type": "stat",
+   "title": "Rows in last 24h partitions",
+   "datasource": {
+    "type": "postgres",
+    "uid": "pg"
+   },
+   "gridPos": {
+    "x": 16,
+    "y": 0,
+    "w": 8,
+    "h": 5
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "postgres",
+      "uid": "pg"
+     },
+     "editorMode": "code",
+     "format": "table",
+     "rawQuery": true,
+     "rawSql": "SELECT count(*) AS rows FROM windowed_user_metrics WHERE window_start > now() AT TIME ZONE 'utc' - interval '24 hours'"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value"
+   }
+  },
+  {
+   "id": 4,
+   "type": "timeseries",
+   "title": "Rows upserted per minute",
+   "datasource": {
+    "type": "postgres",
+    "uid": "pg"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 5,
+    "w": 12,
+    "h": 9
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "postgres",
+      "uid": "pg"
+     },
+     "editorMode": "code",
+     "format": "time_series",
+     "rawQuery": true,
+     "rawSql": "SELECT date_trunc('minute', updated_at) AS time, count(*) AS rows FROM windowed_user_metrics WHERE $__timeFilter(updated_at) GROUP BY 1 ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   }
+  },
+  {
+   "id": 5,
+   "type": "timeseries",
+   "title": "Active pages per window",
+   "datasource": {
+    "type": "postgres",
+    "uid": "pg"
+   },
+   "gridPos": {
+    "x": 12,
+    "y": 5,
+    "w": 12,
+    "h": 9
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "postgres",
+      "uid": "pg"
+     },
+     "editorMode": "code",
+     "format": "time_series",
+     "rawQuery": true,
+     "rawSql": "SELECT window_end AS time, count(DISTINCT page_url) AS pages FROM windowed_user_metrics WHERE $__timeFilter(window_end) GROUP BY 1 ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   }
+  }
+ ]
+}

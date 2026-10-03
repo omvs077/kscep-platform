@@ -68,7 +68,7 @@ module "spark" {
   namespace               = module.namespace.pipeline_namespace_name
   kafka_bootstrap_servers = module.kafka.bootstrap_servers
   kafka_secret_name       = module.secrets.kafka_secret_name
-  image                   = "spark:latest"
+  image                   = "spark:s4-1"
   replicas                = 1
 }
 
@@ -76,4 +76,10 @@ module "postgres" {
   source      = "../../modules/postgres"
   namespace   = module.namespace.pipeline_namespace_name
   secret_name = module.secrets.postgres_secret_name
+}
+
+module "grafana" {
+  source                  = "../../modules/grafana"
+  namespace               = module.namespace.monitoring_namespace_name
+  grafana_reader_password = module.secrets.grafana_reader_password
 }

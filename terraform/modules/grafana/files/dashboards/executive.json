@@ -1,0 +1,288 @@
+{
+ "uid": "kscep-exec",
+ "title": "K.S.C.E.P. Executive",
+ "tags": [
+  "kscep",
+  "executive"
+ ],
+ "timezone": "utc",
+ "schemaVersion": 39,
+ "version": 1,
+ "refresh": "10s",
+ "time": {
+  "from": "now-30m",
+  "to": "now"
+ },
+ "editable": false,
+ "panels": [
+  {
+   "id": 1,
+   "type": "stat",
+   "title": "Active users (latest 60s window, summed over pages)",
+   "datasource": {
+    "type": "postgres",
+    "uid": "pg"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 0,
+    "w": 6,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "postgres",
+      "uid": "pg"
+     },
+     "editorMode": "code",
+     "format": "table",
+     "rawQuery": true,
+     "rawSql": "SELECT COALESCE(sum(active_users),0) AS users FROM windowed_user_metrics WHERE window_end = (SELECT max(window_end) FROM windowed_user_metrics WHERE window_end <= now() AT TIME ZONE 'utc')"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value"
+   }
+  },
+  {
+   "id": 2,
+   "type": "stat",
+   "title": "Cart additions (latest window)",
+   "datasource": {
+    "type": "postgres",
+    "uid": "pg"
+   },
+   "gridPos": {
+    "x": 6,
+    "y": 0,
+    "w": 6,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "postgres",
+      "uid": "pg"
+     },
+     "editorMode": "code",
+     "format": "table",
+     "rawQuery": true,
+     "rawSql": "SELECT COALESCE(sum(cart_additions),0) AS cart_adds FROM windowed_user_metrics WHERE window_end = (SELECT max(window_end) FROM windowed_user_metrics WHERE window_end <= now() AT TIME ZONE 'utc')"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value"
+   }
+  },
+  {
+   "id": 3,
+   "type": "stat",
+   "title": "Purchases (latest window)",
+   "datasource": {
+    "type": "postgres",
+    "uid": "pg"
+   },
+   "gridPos": {
+    "x": 12,
+    "y": 0,
+    "w": 6,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "postgres",
+      "uid": "pg"
+     },
+     "editorMode": "code",
+     "format": "table",
+     "rawQuery": true,
+     "rawSql": "SELECT COALESCE(sum(purchases),0) AS purchases FROM windowed_user_metrics WHERE window_end = (SELECT max(window_end) FROM windowed_user_metrics WHERE window_end <= now() AT TIME ZONE 'utc')"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value"
+   }
+  },
+  {
+   "id": 4,
+   "type": "stat",
+   "title": "Cart abandonment (latest window)",
+   "datasource": {
+    "type": "postgres",
+    "uid": "pg"
+   },
+   "gridPos": {
+    "x": 18,
+    "y": 0,
+    "w": 6,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "postgres",
+      "uid": "pg"
+     },
+     "editorMode": "code",
+     "format": "table",
+     "rawQuery": true,
+     "rawSql": "SELECT COALESCE((sum(cart_additions)-sum(purchases))::float/NULLIF(sum(cart_additions),0),0) AS abandonment FROM windowed_user_metrics WHERE window_end = (SELECT max(window_end) FROM windowed_user_metrics WHERE window_end <= now() AT TIME ZONE 'utc')"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percentunit"
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value"
+   }
+  },
+  {
+   "id": 5,
+   "type": "timeseries",
+   "title": "Conversion funnel: cart additions vs purchases (rolling 60s)",
+   "datasource": {
+    "type": "postgres",
+    "uid": "pg"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 4,
+    "w": 12,
+    "h": 9
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "postgres",
+      "uid": "pg"
+     },
+     "editorMode": "code",
+     "format": "time_series",
+     "rawQuery": true,
+     "rawSql": "SELECT window_end AS time, sum(cart_additions) AS cart_additions, sum(purchases) AS purchases FROM windowed_user_metrics WHERE $__timeFilter(window_end) GROUP BY 1 ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   },
+   "description": "Each point is one 60s window sliding every 10s."
+  },
+  {
+   "id": 6,
+   "type": "timeseries",
+   "title": "Cart abandonment trend",
+   "datasource": {
+    "type": "postgres",
+    "uid": "pg"
+   },
+   "gridPos": {
+    "x": 12,
+    "y": 4,
+    "w": 12,
+    "h": 9
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "postgres",
+      "uid": "pg"
+     },
+     "editorMode": "code",
+     "format": "time_series",
+     "rawQuery": true,
+     "rawSql": "SELECT window_end AS time, (sum(cart_additions)-sum(purchases))::float/NULLIF(sum(cart_additions),0) AS abandonment FROM windowed_user_metrics WHERE $__timeFilter(window_end) GROUP BY 1 ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percentunit"
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 7,
+   "type": "table",
+   "title": "Top pages by active users (latest window)",
+   "datasource": {
+    "type": "postgres",
+    "uid": "pg"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 13,
+    "w": 24,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "postgres",
+      "uid": "pg"
+     },
+     "editorMode": "code",
+     "format": "table",
+     "rawQuery": true,
+     "rawSql": "SELECT page_url, active_users, cart_additions, purchases, round(cart_abandonment_rate::numeric,3) AS abandonment FROM windowed_user_metrics WHERE window_end = (SELECT max(window_end) FROM windowed_user_metrics WHERE window_end <= now() AT TIME ZONE 'utc') ORDER BY active_users DESC LIMIT 15"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {},
+    "overrides": []
+   }
+  }
+ ]
+}
