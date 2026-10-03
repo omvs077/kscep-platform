@@ -1,0 +1,76 @@
+# Gitpod Configuration for K.S.C.E.P. Platform
+image: gitpod/workspace-full
+
+tasks:
+  - name: Setup Tools & Kubernetes
+    before: |
+      echo "=== Setting up DevOps Tools ==="
+      # Install kubectl
+      if ! command -v kubectl &> /dev/null; then
+        echo "Installing kubectl..."
+        curl -LO "https://dl.k8s.io/release/v1.29.2/bin/linux/amd64/kubectl"
+        chmod +x kubectl && sudo mv kubectl /usr/local/bin/
+      fi
+
+      # Install minikube
+      if ! command -v minikube &> /dev/null; then
+        echo "Installing minikube..."
+        curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+        sudo install minikube-linux-amd64 /usr/local/bin/minikube
+        rm minikube-linux-amd64
+      fi
+
+      # Install helm
+      if ! command -v helm &> /dev/null; then
+        echo "Installing helm..."
+        curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      fi
+
+      # Install terraform
+      if ! command -v terraform &> /dev/null; then
+        echo "Installing terraform..."
+        curl -fsSL https://releases.hashicorp.com/terraform/1.9.5/terraform_1.9.5_linux_amd64.zip -o terraform.zip
+        unzip -q terraform.zip && sudo mv terraform /usr/local/bin/ && rm terraform.zip
+      fi
+
+      # Python test dependencies
+      pip install -r tests/integration/requirements.txt
+    init: |
+      # Initialize Terraform Dev Environment
+      terraform -chdir=terraform/envs/dev init -backend=false
+    command: |
+      echo ""
+      echo "======================================================="
+      echo " K.S.C.E.P. Platform Gitpod Environment Ready!"
+      echo "======================================================="
+      echo "To start Minikube in Gitpod:"
+      echo "  minikube start --driver=docker"
+      echo ""
+      echo "To deploy the stack via Terraform:"
+      echo "  cd terraform/envs/dev && terraform apply -auto-approve"
+      echo "======================================================="
+
+ports:
+  - port: 8080
+    onOpen: open-preview
+    name: Producer UI
+    description: Clickstream Producer Control Panel
+  - port: 3000
+    onOpen: open-browser
+    name: Grafana Dashboards
+    description: Grafana Observability Dashboards
+  - port: 9090
+    onOpen: ignore
+    name: Prometheus
+    description: Prometheus TSDB Metrics
+  - port: 3100
+    onOpen: ignore
+    name: Loki
+    description: Loki Log Aggregator
+
+vscode:
+  extensions:
+    - ms-azuretools.vscode-docker
+    - ms-kubernetes-tools.vscode-kubernetes-tools
+    - hashicorp.terraform
+    - ms-python.python
