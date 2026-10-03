@@ -79,4 +79,4 @@ The platform provides end-to-end observability, fine-grained zero-trust network 
 - **Sprint 5 (Done):** Elastic Autoscaling - KEDA Operator, ScaledObjects, Locust Load Testing.
 - **Sprint 6 (Done):** Security Hardening & Compliance - Fine-grained NetPols, Trivy scan, kube-bench, Gitleaks.
 - **Sprint 7 (Done):** Observability Stack - Prometheus, Alertmanager rules, Loki log aggregation.
-- **Sprint 8 (Planned):** CI/CD & Production Readiness - GitHub Actions workflows, end-to-end integration tests.
+- **Sprint 8 (Done):** CI/CD & Production Readiness - GitHub Actions workflows, end-to-end integration tests.

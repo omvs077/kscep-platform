@@ -1,0 +1,38 @@
+name: CI - Code Lint & Unit Tests
+
+on:
+  push:
+    branches: [main, "feature/**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  python-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest jsonschema confluent-kafka psycopg2-binary
+          if [ -f spark/requirements.txt ]; then pip install -r spark/requirements.txt; fi
+          if [ -f producer/requirements.txt ]; then pip install -r producer/requirements.txt; fi
+
+      - name: Lint with Flake8
+        run: |
+          # Stop build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=.git,__pycache__,.pytest_cache
+          # Exit-zero treat all errors as warnings
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=.git,__pycache__,.pytest_cache
+
+      - name: Run Pytest Unit Tests
+        run: |
+          pytest tests/unit/ -v
