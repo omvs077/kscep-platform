@@ -78,9 +78,9 @@ resource "kubernetes_role" "spark_role" {
   }
 
   rule {
-    api_groups     = [""]
-    resources      = ["configmaps", "secrets"]
-    verbs          = ["get", "list"]
+    api_groups = [""]
+    resources  = ["configmaps", "secrets"]
+    verbs      = ["get", "list"]
   }
 }
 
@@ -142,9 +142,9 @@ resource "kubernetes_role" "keda_scale_role" {
   }
 
   rule {
-    api_groups     = ["apps"]
-    resources      = ["deployments/scale", "deployments"]
-    verbs          = ["get", "update", "patch"]
+    api_groups = ["apps"]
+    resources  = ["deployments/scale", "deployments"]
+    verbs      = ["get", "update", "patch"]
   }
 }
 

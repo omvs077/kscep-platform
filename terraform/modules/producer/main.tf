@@ -28,19 +28,19 @@ resource "kubernetes_deployment" "producer" {
         automount_service_account_token = false
 
         security_context {
-          run_as_user           = 1000
-          run_as_group          = 1000
-          fs_group              = 1000
-          run_as_non_root       = true
+          run_as_user     = 1000
+          run_as_group    = 1000
+          fs_group        = 1000
+          run_as_non_root = true
         }
 
         container {
-          name  = "producer"
-          image = var.image
+          name              = "producer"
+          image             = var.image
           image_pull_policy = "Never" # Use local image from minikube cache
 
           security_context {
-            read_only_root_filesystem = true
+            read_only_root_filesystem  = true
             allow_privilege_escalation = false
             capabilities {
               drop = ["ALL"]

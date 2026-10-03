@@ -1,7 +1,7 @@
 resource "helm_release" "kafka" {
-  name       = "kafka"
-  chart      = "${path.module}/../../charts/kafka"
-  namespace  = var.namespace
+  name      = "kafka"
+  chart     = "${path.module}/../../charts/kafka"
+  namespace = var.namespace
 
   # Resource allocations for low-resource environment (dev)
   values = [
